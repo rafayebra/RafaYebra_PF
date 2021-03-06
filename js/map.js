@@ -11,8 +11,19 @@ require(["esri/map",
 "esri/dijit/Scalebar",
 "esri/toolbars/draw",
 "esri/graphic",
+
 "esri/layers/FeatureLayer",
+"esri/dijit/FeatureTable",
+
 "esri/tasks/query",
+
+"dojo/store/Memory",
+"dojo/_base/declare",
+"dgrid/OnDemandGrid",
+"dgrid/Selection",
+"dojo/_base/array",
+
+
 
 "esri/dijit/Popup",
 "esri/dijit/PopupTemplate",
@@ -35,12 +46,32 @@ require(["esri/map",
 
 function(
   Map, ArcGISDynamicMapServiceLayer, 
-  HomeButton, Legend, BasemapGallery, Search, OverviewMap, Scalebar, Draw, Graphic, FeatureLayer, Query,
+  HomeButton, Legend, BasemapGallery, Search, OverviewMap, Scalebar, Draw, Graphic, FeatureLayer, FeatureTable, Query,
+  Memory, declare, Grid, Selection, array,
+
   Popup, PopupTemplate, InfoTemplate,
   SimpleFillSymbol, SimpleLineSymbol, SimpleMarkerSymbol, Color, 
    on, domConstruct,
 
 ) {
+
+
+
+  var gridCities = new (declare([Grid, Selection]))({
+    bufferRows: Infinity,
+    columns: {
+      areaname: "CIUDAD",
+      class:"CLASE",
+      st: "ESTADO",
+      capital: "CAPITAL"
+        
+    }
+  }, "tablaCities");
+
+
+
+
+
 
 
   
@@ -87,6 +118,8 @@ function(
       popup.hide()
     });
 
+    var outFieldsCities = ["areaname", "class", "st", "capital"];
+
     /*
     Añadir el USA map service al mapa
     */
@@ -100,6 +133,7 @@ function(
   */
   var lyrCities = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/0", {
     opacity: 0.5,
+    outFields: outFieldsCities,
   }); 
 
   var lyrHighways = new FeatureLayer("http://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/1", {
@@ -118,12 +152,64 @@ function(
   });
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     mapMain.on("load",function(evt){
       mapMain.resize();
       mapMain.reposition();
 
     
       mapMain.addLayers([lyrCountries, lyrStates, lyrHighways, lyrCities]);
+
+
+    /*
+
+
+      var table = new FeatureTable({
+        layer: lyrCities,
+       // visibleElements: {selectionColumn: false}, // hide the selection column since we are not working with a corresponding map
+        // autocastable to FieldColumnConfig
+        // The fieldColumnConfigs are used to determine which attributes are shown in the table
+        // If the fieldColumnConfigs are not set, all attributes will be shown
+        fieldConfigs: [
+          {
+            name: "capital",
+            label: "CAPITAL",
+            // This field will not be shown in the table initially
+            
+          },
+         
+          
+        ],
+        
+        }, "searchStates");
+
+        table.startup();
+
+
+    */
+
+    
+
+
+
+
+
 
         
       /*
@@ -159,7 +245,9 @@ function(
       attachTo:"bottom-right",
       visible: true,
       color:" #224a54",
-      opacity: 0.250      
+      opacity: 0.250,
+      height: 150,
+      width:250      
      });
 
     overviewMapDijit.startup(); 
@@ -258,7 +346,7 @@ function(
       // Agregar una leyenda.
       var dijitLegend = new Legend ({
         map: mapMain,
-        arrangement: Legend.ALIGN_RIGHT,
+        arrangement: Legend.ALIGN_LEFT,
         },"legendDiv");
 
       dijitLegend.startup();
@@ -341,9 +429,63 @@ function(
 
 
 
+                /*
+                 * Step: Wire the layer's selection complete event
+                 Paso: Cablee el evento de selección completa de la capa
+                 Se quiere llamar al metodo on de la capa de consulta para que al completar el poligono haga un grid con la selección.
+                 Una vez  que se complete la selección nos da el nombre de la funcion asociada. Ahora ya se puede llamar a selectfeature 
+                 introduciendo los paramentros de consulta.
+                 */
+
+                lyrCities.on("selection-complete", populateGrid)
+
+
+
                 
 
                 lyrCities.selectFeatures(queryCities, FeatureLayer.SELECTION_NEW)
+
+              }
+
+              function populateGrid(results) {
+
+               
+                
+
+                var dataCities = array.map(results.features, function (feature) {
+                    return {
+
+                        /*
+                         * Step: Reference the attribute field values
+                         PASO: Definir los campos de la capa de salida
+
+                         Se una un array para decir que campos quiere que nos muestra de dataQuery
+                         */
+
+                        "areaname": feature.attributes[outFieldsCities[0]],
+                        "class": feature.attributes[outFieldsCities[1]],
+                        "st": feature.attributes[outFieldsCities[2]],
+                        "capital": feature.attributes[outFieldsCities[3]],
+                        
+                        
+                        
+
+
+
+                    }
+                });
+
+                 // Pass the data to the grid
+                 var memStore = new Memory({
+                  data: dataCities
+                });
+                gridCities.set("store", memStore);
+                
+
+    
+
+
+
                 
             };
   
@@ -355,20 +497,39 @@ function(
         lyrCities.clearSelection();
         mapMain.graphics.clear();
         tbDraw.deactivate();
+        
 
         mapMain.setInfoWindowOnClick(true);
+        
+      /* 
+       
+        dataCities = array.map(results.features, function (feature) {
+          return {
+
+              "areaname": feature.attributes[outFieldsCities[0]],
+              "class": feature.attributes[outFieldsCities[1]],
+              "st": feature.attributes[outFieldsCities[2]],
+              "capital": feature.attributes[outFieldsCities[3]],
+           
+          }
+      });
+
+*/
+
+
+
       };
       
       
-
+ /*
       on(dojo.byId("progButtonNode"),"click",fQueryEstados);
-       
+      
       function fQueryEstados(){
        alert("Evento del botón Seleccionar ciudades");
       }
   
       
-      
+      */
 
 
 
