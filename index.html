@@ -49,47 +49,35 @@
           </div>
 
           <div id= "panelCiudades" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title:'CIUDADES'" >
-            
-            
+                        
             <div id="botonesCiudades">
               <button id="pintaYQuery" type="button">Seleccionar ciudades</button>
               <button id="finPintaYQuery" type="button">Cancelar selección</button>
             </div>           
-            
-
-            
           
           </div>
      
 
           <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title:'ESTADOS'" >
+
             <div>
               <div>
                 <label for="dtb">Introduzca el nombre de un estado:</label>
               </div>
-              <div id="searchStates"></div>
-            </div>           
+              <div id="searchStates">
+              </div>
+            </div>
+
           </div>
 
         </div>
       </div>
 
-
-
-
-
-
-
-
-
       <div id="map" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'center'">
         
         <div>
           <div id="homeBottom"></div>
-        </div>
-
-
-        
+        </div> 
         
         <div>
           <div id="search"></div>
@@ -103,10 +91,8 @@
               </div>
           </div>
         </div>
-
-      
+     
       </div >
-      
     
       <div id="footer" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="splitter:'true', region:'bottom'">
         
@@ -114,8 +100,6 @@
         
         <div id="tablaCities"></div>     
 
-        <!--label for="dtb">Introduzca el nombre de un estado:</label> <input id="dtb" data-dojo-type="dijit/form/TextBox" value="Washington" />
-        <button id="progButtonNode" type="button">Ir al estado</button-->
       </div>
 
     </div>
